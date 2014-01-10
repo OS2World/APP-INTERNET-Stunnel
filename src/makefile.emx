@@ -1,0 +1,73 @@
+prefix=.
+DEFS = -DPACKAGE_NAME=\"stunnel\" \
+	-DPACKAGE_TARNAME=\"stunnel\" \
+	-DPACKAGE_VERSION=\"4.05\" \
+	-DPACKAGE_STRING=\"stunnel\ 4.05\" \
+	-DPACKAGE_BUGREPORT=\"\" \
+	-DPACKAGE=\"stunnel\" \
+	-DVERSION=\"4.05\" \
+	-DSTDC_HEADERS=1 \
+	-DHAVE_SYS_TYPES_H=1 \
+	-DHAVE_SYS_STAT_H=1 \
+	-DHAVE_STDLIB_H=1 \
+	-DHAVE_STRING_H=1 \
+	-DHAVE_MEMORY_H=1 \
+	-DHAVE_STRINGS_H=1 \
+	-DHAVE_UNISTD_H=1 \
+	-DHAVE_OPENSSL=1 \
+	-Dssldir=\"/usr\" \
+	-DHOST=\"i386-pc-os2-emx\" \
+	-DHAVE_LIBSOCKET=1 \
+	-DHAVE_GRP_H=1 \
+	-DHAVE_UNISTD_H=1 \
+	-DHAVE_SYS_SELECT_H=1 \
+	-DHAVE_SYS_IOCTL_H=1 \
+	-DHAVE_SYS_RESOURCE_H=1 \
+	-DHAVE_SNPRINTF=1 \
+	-DHAVE_VSNPRINTF=1 \
+	-DHAVE_WAITPID=1 \
+	-DHAVE_SYSCONF=1 \
+	-DHAVE_ENDHOSTENT=1 \
+	-DSIZEOF_UNSIGNED_CHAR=1 \
+	-DSIZEOF_UNSIGNED_SHORT=2 \
+	-DSIZEOF_UNSIGNED_INT=4 \
+	-DSIZEOF_UNSIGNED_LONG=4 \
+      	-DLIBDIR=\"$(prefix)/lib\" \
+        -DCONFDIR=\"$(prefix)/etc\" \
+        -DPIDFILE=\"$(prefix)/stunnel.pid\" \
+        -DUSE_OS2=1 \
+        -DMAX_CLIENTS=100 \
+        -Dstrcasecmp=stricmp \
+        -Dstrncasecmp=strnicmp
+        
+.SUFFIXES = .c .o .lo
+openssldir = /unixos2/workdir/openssl-0.9.7e
+syslogdir = /unixos2/workdir/syslog
+INCLUDES = -I$(openssldir)/outinc -I$(syslogdir) -I/usr/include -I/unixos2/posix2/include 
+LIBS = -L$(openssldir)/out_dll -L$(syslogdir) -L/unixos2/emx/lib -L/usr/lib -lssl -lcrypto -lsyslog -lsocket 
+OBJS = client.o log.o options.o protocol.o sselect.o ssl.o sthreads.o stunnel.o pty.o
+libdir = .
+cflags = -g -O2 -Wall -Wshadow -Wcast-align -Wpointer-arith
+
+all: stunnel.exe
+
+stunnel.exe: $(OBJS)
+	$(CC)  -Zcrtdll $(cflags) -o $@ $(OBJS) $(LIBS) $(DEFS) $(INCLUDES)
+
+.c.o:
+	$(CC) $(cflags) $(DEFS) -o $@ -c $< $(INCLUDES)
+
+client.o: client.c common.h prototypes.h
+env.lo env.o : env.c
+log.o: log.c common.h prototypes.h
+options.o: options.c common.h prototypes.h
+protocol.o: protocol.c common.h prototypes.h
+pty.o: pty.c common.h prototypes.h
+sselect.o: sselect.c common.h prototypes.h
+ssl.o: ssl.c common.h prototypes.h
+sthreads.o: sthreads.c common.h prototypes.h
+stunnel.o: stunnel.c common.h prototypes.h
+
+clean:
+	rm -f *.o *.exe
+        

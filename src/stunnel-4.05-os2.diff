@@ -1,0 +1,74 @@
+Only in stunnel-4.05-os2\src: .libs
+Only in stunnel-4.05\src: make.bat
+Only in stunnel-4.05-os2\src: makefile.emx
+diff -cr stunnel-4.05\src/pty.c stunnel-4.05-os2\src/pty.c
+*** stunnel-4.05\src/pty.c	Sun Jan 25 17:18:16 2004
+--- stunnel-4.05-os2\src/pty.c	Wed Dec 22 10:37:24 2004
+***************
+*** 62,68 ****
+   */
+  
+  int pty_allocate(int *ptyfd, int *ttyfd, char *namebuf, int namebuflen) {
+! #if defined(HAVE_OPENPTY) || defined(BSD4_4)
+      /* openpty(3) exists in OSF/1 and some other os'es */
+      char buf[64];
+      int i;
+--- 62,68 ----
+   */
+  
+  int pty_allocate(int *ptyfd, int *ttyfd, char *namebuf, int namebuflen) {
+! #if defined(HAVE_OPENPTY) || defined(BSD4_4) && !defined(USE_OS2)
+      /* openpty(3) exists in OSF/1 and some other os'es */
+      char buf[64];
+      int i;
+Only in stunnel-4.05-os2\src: stunnel-4.05-os2.diff
+diff -cr stunnel-4.05\src/stunnel.c stunnel-4.05-os2\src/stunnel.c
+*** stunnel-4.05\src/stunnel.c	Sat Feb 14 14:12:26 2004
+--- stunnel-4.05-os2\src/stunnel.c	Wed Dec 22 11:47:42 2004
+***************
+*** 173,179 ****
+      sselect_init(&base_set, &n);
+  #endif
+  
+! #if !defined (USE_WIN32) && !defined (__vms)
+      if(!(options.option.foreground))
+          daemonize();
+      drop_privileges();
+--- 173,179 ----
+      sselect_init(&base_set, &n);
+  #endif
+  
+! #if !defined (USE_WIN32) && !defined (__vms) && !defined(USE_OS2)
+      if(!(options.option.foreground))
+          daemonize();
+      drop_privileges();
+***************
+*** 257,262 ****
+--- 257,272 ----
+      max_clients=30000;
+      log(LOG_NOTICE, "WIN32 platform: %d clients allowed", max_clients);
+  #else
++ #ifdef USE_OS2
++     /* Like on WIN32 OS/2 does not share the same handles between
++      files and socket connections, this allows us to have many
++      connections, MAX_CLIENTS is a compile time limit you set to
++      something your processor can handle.
++      */
++     max_clients=MAX_CLIENTS;
++     max_fds=max_clients*2+6;
++ #else
++ 
+      int fds_ulimit=-1;
+  
+  #if defined HAVE_SYSCONF
+***************
+*** 278,283 ****
+--- 288,294 ----
+      max_clients=max_fds>=256 ? max_fds*125/256 : (max_fds-6)/2;
+      log(LOG_NOTICE, "FD_SETSIZE=%d, file ulimit=%d%s -> %d clients allowed",
+          FD_SETSIZE, fds_ulimit, fds_ulimit<0?" (unlimited)":"", max_clients);
++ #endif
+  #endif
+  }
+  
+Only in stunnel-4.05\src: stunnel.exe
